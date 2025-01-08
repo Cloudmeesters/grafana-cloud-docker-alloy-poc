@@ -1,0 +1,26 @@
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+prometheus.scrape "docker" {
+  targets = [{
+    __address__ = "172.17.0.1:9323",
+  }]
+  forward_to = [prometheus.remote_write.grafanacloud.receiver]
+}
+
+prometheus.scrape "containers" {
+  targets    = discovery.docker.containers.targets
+  forward_to = [prometheus.remote_write.grafanacloud.receiver]
+}
+
+prometheus.remote_write "grafanacloud" {
+  endpoint {
+    url = "https://prometheus.grafana.net/api/prom/push"
+
+    basic_auth {
+      username = ""
+      password = ""
+    }
+  }
+}
